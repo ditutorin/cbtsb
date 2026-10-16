@@ -8,108 +8,42 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-    .option-selected {
-      border-color: #3b82f6 !important;
-      background-color: #eff6ff !important;
-    }
-    .option-correct {
-      border-color: #22c55e !important;
-      background-color: #dcfce7 !important;
-    }
+    .option-selected { border-color: #3b82f6 !important; background-color: #eff6ff !important; }
+    .option-correct { border-color: #22c55e !important; background-color: #dcfce7 !important; }
     .nav-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      border: 2px solid #e5e7eb;
-      background: white;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.2s;
+      width: 40px; height: 40px; border-radius: 8px;
+      border: 2px solid #e5e7eb; background: white;
+      font-weight: bold; cursor: pointer; transition: all 0.2s;
     }
     .nav-btn:hover { border-color: #93c5fd; }
-    .nav-btn.active {
-      background: #3b82f6;
-      color: white;
-      border-color: #3b82f6;
-    }
-    .nav-btn.answered {
-      background: #dcfce7;
-      color: #16a34a;
-      border-color: #86efac;
-    }
+    .nav-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+    .nav-btn.answered { background: #dcfce7; color: #16a34a; border-color: #86efac; }
     .image-preview {
-      max-width: 200px;
-      max-height: 150px;
-      object-fit: cover;
-      border-radius: 8px;
-      border: 2px solid #e5e7eb;
+      max-width: 200px; max-height: 150px;
+      object-fit: cover; border-radius: 8px; border: 2px solid #e5e7eb;
     }
     .option-preview {
-      max-width: 80px;
-      max-height: 60px;
-      object-fit: cover;
-      border-radius: 6px;
-      border: 1px solid #e5e7eb;
+      max-width: 80px; max-height: 60px;
+      object-fit: cover; border-radius: 6px; border: 1px solid #e5e7eb;
     }
-    .option-input {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .option-input input[type="text"] {
-      flex: 1;
-      min-width: 100px;
-    }
-    .option-input input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-    }
-    .option-input .remove-option {
-      color: #ef4444;
-      cursor: pointer;
-      font-size: 18px;
-      padding: 0 4px;
-    }
-    .option-input .remove-option:hover {
-      color: #dc2626;
-    }
-    .drag-over {
-      border: 3px dashed #3b82f6 !important;
-      background: #eff6ff !important;
-    }
+    .option-input { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .option-input input[type="text"] { flex: 1; min-width: 100px; }
+    .option-input input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+    .option-input .remove-option { color: #ef4444; cursor: pointer; font-size: 18px; padding: 0 4px; }
+    .option-input .remove-option:hover { color: #dc2626; }
+    .drag-over { border: 3px dashed #3b82f6 !important; background: #eff6ff !important; }
     .excel-template {
-      background: #f8fafc;
-      border: 2px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 16px;
-      font-size: 12px;
-      font-family: monospace;
-      overflow-x: auto;
-      white-space: pre;
+      background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 8px;
+      padding: 16px; font-size: 12px; font-family: monospace;
+      overflow-x: auto; white-space: pre;
     }
-    .admin-login-btn {
-      display: none !important;
-    }
-    .admin-login-btn.visible {
-      display: block !important;
-    }
-    .option-image-upload {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .option-image-upload input[type="file"] {
-      font-size: 11px;
-      max-width: 100px;
-    }
+    .admin-login-btn { display: none !important; }
+    .admin-login-btn.visible { display: block !important; }
+    .option-image-upload { display: flex; align-items: center; gap: 6px; }
+    .option-image-upload input[type="file"] { font-size: 11px; max-width: 100px; }
     .option-image-upload .preview-thumb {
-      width: 40px;
-      height: 40px;
-      object-fit: cover;
-      border-radius: 6px;
-      border: 1px solid #d1d5db;
+      width: 40px; height: 40px; object-fit: cover;
+      border-radius: 6px; border: 1px solid #d1d5db;
     }
   </style>
 </head>
@@ -137,7 +71,6 @@ function checkHash() {
     goToAdmin();
   }
 }
-
 window.addEventListener('hashchange', checkHash);
 
 // ==========================================
@@ -171,7 +104,7 @@ let state = {
   currentQuestionNumber: 1,
   imageData: null,
   optionCount: 4,
-  optionImages: {} // menyimpan URL gambar per opsi
+  optionImages: {}
 };
 
 const app = document.getElementById('app');
@@ -201,13 +134,11 @@ function renderLogin() {
           <h1 class="text-3xl font-bold text-gray-800">📝 CBT App</h1>
           <p class="text-gray-500 text-sm">Computer Based Test Platform</p>
         </div>
-
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700">Nama Lengkap <span class="text-red-500">*</span></label>
             <input id="login-name" type="text" class="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Masukkan nama Anda" />
           </div>
-
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-sm font-medium text-gray-700">Sekolah</label>
@@ -218,7 +149,6 @@ function renderLogin() {
               <input id="login-branch" type="text" class="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="kota/Kab." />
             </div>
           </div>
-
           <div>
             <label class="block text-sm font-medium text-gray-700">Pilih Ujian</label>
             <select id="login-exam" class="w-full mt-1 px-4 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
@@ -227,21 +157,9 @@ function renderLogin() {
               <option value="Fisika 10 SMA S1 (PTS)">Fisika 10 SMA S1 (PTS)</option>
             </select>
           </div>
-
           <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">
             🚀 Mulai Ujian
           </button>
-
-          <div class="admin-login-btn hidden">
-            <div class="relative">
-              <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-300"></div></div>
-              <div class="relative flex justify-center text-sm"><span class="px-2 bg-white text-gray-500">atau</span></div>
-            </div>
-            <button onclick="goToAdmin()" class="w-full bg-gray-200 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-300 transition mt-4">
-              🔐 Login Admin
-            </button>
-          </div>
-                    
         </div>
       </div>
     </div>
@@ -257,6 +175,8 @@ function goToAdmin() {
   state.imageData = null;
   state.optionCount = 4;
   state.optionImages = {};
+  editingExamId = null;
+  editingQuestionIndex = null;
   render();
 }
 
@@ -309,9 +229,7 @@ async function handleLogin() {
   }
 
   state.answers = {};
-  state.exam.questions.forEach(q => {
-    state.answers[q.id] = [];
-  });
+  state.exam.questions.forEach(q => { state.answers[q.id] = []; });
   state.currentIndex = 0;
   state.timeLeft = state.exam.durasi;
   state.cheatCount = 0;
@@ -337,8 +255,6 @@ function renderStudent() {
   const total = exam.questions.length;
   const selected = state.answers[q.id] || [];
   const isMultiSelect = q.type === 'PGK' || q.type === 'ST' || q.type === 'BSK';
-
-  // Cek apakah options berupa array of objects (dengan gambar) atau array of strings
   const isOptionWithImage = q.options && q.options.length > 0 && typeof q.options[0] === 'object';
 
   app.innerHTML = `
@@ -438,9 +354,7 @@ function selectAnswer(index) {
   const q = state.exam.questions[state.currentIndex];
   state.answers[q.id] = [index];
   const options = document.querySelectorAll('.cursor-pointer');
-  options.forEach((el, i) => {
-    el.classList.toggle('option-selected', i === index);
-  });
+  options.forEach((el, i) => { el.classList.toggle('option-selected', i === index); });
   updateNavButtons();
 }
 
@@ -453,9 +367,7 @@ function toggleAnswer(index) {
     state.answers[q.id] = [...current, index];
   }
   const options = document.querySelectorAll('.cursor-pointer');
-  options.forEach((el, i) => {
-    el.classList.toggle('option-selected', state.answers[q.id].includes(i));
-  });
+  options.forEach((el, i) => { el.classList.toggle('option-selected', state.answers[q.id].includes(i)); });
   updateNavButtons();
 }
 
@@ -472,24 +384,13 @@ function updateNavButtons() {
 }
 
 function nextQuestion() {
-  if (state.currentIndex < state.exam.questions.length - 1) {
-    state.currentIndex++;
-    render();
-  }
+  if (state.currentIndex < state.exam.questions.length - 1) { state.currentIndex++; render(); }
 }
-
 function prevQuestion() {
-  if (state.currentIndex > 0) {
-    state.currentIndex--;
-    render();
-  }
+  if (state.currentIndex > 0) { state.currentIndex--; render(); }
 }
-
 function goToQuestion(index) {
-  if (index >= 0 && index < state.exam.questions.length) {
-    state.currentIndex = index;
-    render();
-  }
+  if (index >= 0 && index < state.exam.questions.length) { state.currentIndex = index; render(); }
 }
 
 function confirmSubmit() {
@@ -506,18 +407,14 @@ async function submitExam() {
   if (state.submitted) return;
   state.submitted = true;
 
-  if (state.timer) {
-    clearInterval(state.timer);
-    state.timer = null;
-  }
+  if (state.timer) { clearInterval(state.timer); state.timer = null; }
 
   let correct = 0;
   const total = state.exam.questions.length;
   state.exam.questions.forEach(q => {
     const userAnswer = state.answers[q.id] || [];
     const correctAnswer = q.answer || [];
-    if (userAnswer.length === correctAnswer.length && 
-        userAnswer.every(v => correctAnswer.includes(v))) {
+    if (userAnswer.length === correctAnswer.length && userAnswer.every(v => correctAnswer.includes(v))) {
       correct++;
     }
   });
@@ -540,14 +437,9 @@ async function submitExam() {
   console.log('📊 Hasil Ujian:', result);
 
   try {
-    const { error } = await sb
-      .from('exam_results')
-      .insert([result]);
-    if (error) {
-      console.warn('⚠️ Gagal simpan ke Supabase:', error.message);
-    } else {
-      console.log('✅ Hasil tersimpan di Supabase');
-    }
+    const { error } = await sb.from('exam_results').insert([result]);
+    if (error) console.warn('⚠️ Gagal simpan ke Supabase:', error.message);
+    else console.log('✅ Hasil tersimpan di Supabase');
   } catch (err) {
     console.warn('⚠️ Error simpan ke Supabase:', err.message);
   }
@@ -568,7 +460,6 @@ function renderResult() {
           <h1 class="text-2xl font-bold">Ujian Selesai!</h1>
           <p class="text-gray-500 text-sm">${state.student.name}</p>
         </div>
-
         <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 my-6 text-center">
           <div class="text-5xl font-bold text-blue-600">${r.score}%</div>
           <div class="text-sm text-gray-500">Nilai Akhir</div>
@@ -577,13 +468,11 @@ function renderResult() {
             <div><div class="text-2xl font-bold text-red-600">${r.total_questions - r.correct_answers}</div><div class="text-sm text-gray-500">Salah</div></div>
           </div>
         </div>
-
         ${r.cheating_count > 0 ? `
           <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-lg mb-4">
             <p class="text-yellow-800 text-sm">⚠️ Terdeteksi ${r.cheating_count} kali pelanggaran</p>
           </div>
         ` : ''}
-
         <button onclick="backToLogin()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">
           Kembali ke Login
         </button>
@@ -594,16 +483,13 @@ function renderResult() {
 
 function backToLogin() {
   console.log('🔙 Back to login');
-  if (state.timer) {
-    clearInterval(state.timer);
-    state.timer = null;
-  }
+  if (state.timer) { clearInterval(state.timer); state.timer = null; }
   state.view = 'login';
   state.exam = null;
   state.result = null;
-  if (window.location.hash) {
-    history.pushState(null, '', window.location.pathname);
-  }
+  editingExamId = null;
+  editingQuestionIndex = null;
+  if (window.location.hash) history.pushState(null, '', window.location.pathname);
   render();
 }
 
@@ -612,7 +498,6 @@ function backToLogin() {
 // ==========================================
 function startTimer() {
   if (state.timer) clearInterval(state.timer);
-
   state.timer = setInterval(() => {
     state.timeLeft--;
     if (state.timeLeft <= 0) {
@@ -635,22 +520,15 @@ function updateTimerDisplay() {
 
 function activateAntiCheat() {
   document.addEventListener('contextmenu', e => e.preventDefault());
-
   document.addEventListener('keydown', e => {
     if (e.ctrlKey && ['c', 'v', 'x', 'u'].includes(e.key.toLowerCase())) {
       e.preventDefault();
       detectCheat('Keyboard shortcut');
     }
-    if (e.key === 'F12') {
-      e.preventDefault();
-      detectCheat('F12');
-    }
+    if (e.key === 'F12') { e.preventDefault(); detectCheat('F12'); }
   });
-
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden && state.view === 'student') {
-      detectCheat('Switch tab');
-    }
+    if (document.hidden && state.view === 'student') detectCheat('Switch tab');
   });
 }
 
@@ -666,15 +544,17 @@ function detectCheat(action) {
 }
 
 // ==========================================
-// ADMIN - UPLOAD GAMBAR PER OPSI
+// ADMIN
 // ==========================================
 let excelData = [];
+let brankasData = [];
+let editingExamId = null;
+let editingQuestionIndex = null;
 
 function renderAdmin() {
   console.log('📊 Render Admin');
-  
   const questions = state.adminQuestions || [];
-  
+
   app.innerHTML = `
     <div class="min-h-screen bg-gray-100">
       <div class="max-w-4xl mx-auto p-4">
@@ -686,6 +566,7 @@ function renderAdmin() {
         <div class="flex gap-2 mb-4">
           <button onclick="showTab('manual')" id="tab-manual" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">📝 Buat Manual</button>
           <button onclick="showTab('excel')" id="tab-excel" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300">📊 Import Excel</button>
+          <button onclick="showTab('brankas')" id="tab-brankas" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300">🗄️ Brankas Soal</button>
         </div>
 
         <div id="tab-manual-content" class="space-y-4">
@@ -772,12 +653,12 @@ function renderAdmin() {
           <div class="bg-white rounded-xl shadow p-6">
             <h2 class="font-bold text-gray-700 mb-3">📋 Daftar Soal (${questions.length})</h2>
             <div id="question-list" class="space-y-2 max-h-60 overflow-y-auto">
-              ${questions.length === 0 ? '<p class="text-gray-400 text-sm">Belum ada soal</p>' : 
+              ${questions.length === 0 ? '<p class="text-gray-400 text-sm">Belum ada soal</p>' :
                 questions.map((q, i) => `
                   <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg border">
                     <div>
                       <span class="font-bold text-blue-600">#${i+1}</span>
-                      <span class="text-sm text-gray-700 ml-2">${q.text.substring(0, 50)}${q.text.length > 50 ? '...' : ''}</span>
+                      <span class="text-sm text-gray-700 ml-2">${(q.text || '').substring(0, 50)}${(q.text || '').length > 50 ? '...' : ''}</span>
                       <span class="text-xs bg-gray-200 px-2 py-0.5 rounded ml-2">${q.type}</span>
                       <span class="text-xs text-gray-400 ml-2">${q.options.length} opsi</span>
                     </div>
@@ -785,9 +666,9 @@ function renderAdmin() {
                   </div>
                 `).join('')}
             </div>
-            
+
             <button onclick="saveAllQuestions()" class="w-full mt-4 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">
-              💾 Simpan Semua ke Brankas (${questions.length} soal)
+              💾 ${editingExamId ? 'Simpan Perubahan' : `Simpan Semua ke Brankas (${questions.length} soal)`}
             </button>
           </div>
         </div>
@@ -795,7 +676,6 @@ function renderAdmin() {
         <div id="tab-excel-content" class="hidden">
           <div class="bg-white rounded-xl shadow p-6">
             <h2 class="font-bold text-gray-700 mb-4">📊 Import Soal dari Excel</h2>
-            
             <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center" id="drop-zone">
               <p class="text-gray-500">📁 Drag & drop file Excel (.xlsx) ke sini</p>
               <p class="text-gray-400 text-sm mt-2">atau</p>
@@ -853,6 +733,19 @@ function renderAdmin() {
             </div>
           </div>
         </div>
+
+        <div id="tab-brankas-content" class="hidden">
+          <div class="bg-white rounded-xl shadow p-6">
+            <h2 class="font-bold text-gray-700 mb-4">🗄️ Brankas Soal</h2>
+            <button onclick="loadBrankas()" class="bg-blue-600 text-white px-4 py-2 rounded-lg mb-4 hover:bg-blue-700">
+              🔄 Muat Ulang Data
+            </button>
+            <div id="brankas-list" class="space-y-4">
+              <p class="text-gray-400 text-sm">Klik "Muat Ulang Data" untuk melihat daftar soal.</p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   `;
@@ -867,37 +760,35 @@ function renderAdmin() {
       e.preventDefault();
       dropZone.classList.add('drag-over');
     });
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('drag-over');
-    });
+    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('drag-over'); });
     dropZone.addEventListener('drop', (e) => {
       e.preventDefault();
       dropZone.classList.remove('drag-over');
       const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        handleExcelFile({ target: { files: files } });
-      }
+      if (files.length > 0) handleExcelFile({ target: { files: files } });
     });
   }
 
   updateOptionsByType();
 }
 
-// ==========================================
-// ADMIN HELPER FUNCTIONS
-// ==========================================
 function showTab(tab) {
-  document.querySelectorAll('[id^="tab-"]').forEach(el => {
-    el.classList.add('hidden');
+  document.querySelectorAll('[id$="-content"]').forEach(el => el.classList.add('hidden'));
+  const content = document.getElementById(`tab-${tab}-content`);
+  if (content) content.classList.remove('hidden');
+
+  ['manual', 'excel', 'brankas'].forEach(t => {
+    const btn = document.getElementById(`tab-${t}`);
+    if (btn) {
+      btn.classList.remove('bg-blue-600', 'text-white');
+      btn.classList.add('bg-gray-200', 'text-gray-700');
+    }
   });
-  document.getElementById(`tab-${tab}-content`).classList.remove('hidden');
-  
-  document.querySelectorAll('[id^="tab-"]').forEach(el => {
-    el.classList.remove('bg-blue-600', 'text-white');
-    el.classList.add('bg-gray-200', 'text-gray-700');
-  });
-  document.getElementById(`tab-${tab}`).classList.remove('bg-gray-200', 'text-gray-700');
-  document.getElementById(`tab-${tab}`).classList.add('bg-blue-600', 'text-white');
+  const activeBtn = document.getElementById(`tab-${tab}`);
+  if (activeBtn) {
+    activeBtn.classList.remove('bg-gray-200', 'text-gray-700');
+    activeBtn.classList.add('bg-blue-600', 'text-white');
+  }
 }
 
 function addOption() {
@@ -906,19 +797,18 @@ function addOption() {
 }
 
 function removeOption() {
-  if (state.optionCount <= 2) {
-    alert('Minimal 2 opsi!');
-    return;
-  }
+  if (state.optionCount <= 2) { alert('Minimal 2 opsi!'); return; }
   state.optionCount--;
   updateOptionsByType();
 }
 
 function updateOptionsByType() {
-  const type = document.getElementById('f-tipe-soal').value;
+  const typeEl = document.getElementById('f-tipe-soal');
+  if (!typeEl) return;
+  const type = typeEl.value;
   const container = document.getElementById('options-container');
   const correctContainer = document.getElementById('correct-options');
-  
+
   let optionCount = state.optionCount;
   let optionLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
   let isMultiSelect = false;
@@ -985,88 +875,65 @@ function updateOptionsByType() {
 }
 
 // ==========================================
-// UPLOAD GAMBAR PER OPSI KE SUPABASE STORAGE
+// UPLOAD GAMBAR
 // ==========================================
 async function uploadOptionImage(index, input) {
   const file = input.files[0];
   if (!file) return;
 
-  // Show loading
   const preview = document.getElementById(`opt-preview-${index}`);
-  if (preview) {
-    preview.innerHTML = '⏳';
-    preview.className = 'w-10 h-10 border rounded border-gray-200 flex items-center justify-center text-xs text-gray-400';
-  }
+  if (preview) preview.innerHTML = '⏳';
 
   try {
-    // Upload ke Supabase Storage
-    const fileName = `option_${Date.now()}_${file.name}`;
-    const { data, error } = await sb
+    const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const fileName = `opt_${Date.now()}_${cleanName}`;
+
+    const { error } = await sb
       .storage
       .from('exam-images')
-      .upload(`options/${fileName}`, file);
+      .upload(`options/${fileName}`, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type
+      });
 
     if (error) throw error;
 
-    // Get public URL
     const { data: urlData } = sb
       .storage
       .from('exam-images')
       .getPublicUrl(`options/${fileName}`);
 
     const imageUrl = urlData.publicUrl;
-    
-    // Simpan ke state
     state.optionImages[index] = imageUrl;
     document.getElementById(`opt-image-url-${index}`).value = imageUrl;
 
-    // Update preview
     if (preview) {
       preview.innerHTML = `<img src="${imageUrl}" class="preview-thumb" />`;
       preview.className = '';
     }
 
-    // Tambah tombol hapus
-    const container = document.getElementById(`opt-img-${index}`).parentElement;
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'text-red-500 text-xs';
-    removeBtn.innerHTML = '✕';
-    removeBtn.onclick = () => removeOptionImage(index);
-    container.appendChild(removeBtn);
-
     alert('✅ Gambar opsi berhasil diupload!');
-
   } catch (err) {
-    console.error('❌ Gagal upload gambar:', err);
-    alert('❌ Gagal upload gambar: ' + err.message);
-    if (preview) {
-      preview.innerHTML = '❌';
-      preview.className = 'w-10 h-10 border rounded border-red-300 flex items-center justify-center text-xs text-red-500';
-    }
+    console.error('❌ Gagal upload:', err);
+    alert('❌ Gagal upload: ' + (err.message || JSON.stringify(err)));
+    if (preview) preview.innerHTML = '❌';
   }
 }
 
 function removeOptionImage(index) {
   state.optionImages[index] = null;
-  document.getElementById(`opt-image-url-${index}`).value = '';
+  const urlInput = document.getElementById(`opt-image-url-${index}`);
+  if (urlInput) urlInput.value = '';
   const preview = document.getElementById(`opt-preview-${index}`);
   if (preview) {
-    preview.innerHTML = 'Preview';
-    preview.className = 'w-10 h-10 border rounded border-gray-200 flex items-center justify-center text-xs text-gray-400';
+    preview.outerHTML = `<div id="opt-preview-${index}" class="w-10 h-10 border rounded border-gray-200 flex items-center justify-center text-xs text-gray-400">Preview</div>`;
   }
-  // Hapus tombol hapus
-  const container = document.getElementById(`opt-img-${index}`).parentElement;
-  const removeBtn = container.querySelector('button.text-red-500');
-  if (removeBtn) removeBtn.remove();
 }
 
-// ==========================================
-// PREVIEW IMAGE (untuk gambar soal)
-// ==========================================
 function previewImage(event) {
   const file = event.target.files[0];
   if (!file) return;
-  
   const reader = new FileReader();
   reader.onload = function(e) {
     const preview = document.getElementById('image-preview');
@@ -1079,10 +946,7 @@ function previewImage(event) {
 }
 
 function uploadImage() {
-  if (!state.imageData) {
-    alert('Pilih gambar dulu!');
-    return;
-  }
+  if (!state.imageData) { alert('Pilih gambar dulu!'); return; }
   document.getElementById('f-image-url').value = state.imageData;
   alert('✅ Gambar siap digunakan!');
 }
@@ -1095,40 +959,28 @@ function removeImage() {
 }
 
 // ==========================================
-// ADD QUESTION TO LIST (dengan gambar opsi)
+// ADD QUESTION TO LIST
 // ==========================================
 function addQuestionToList() {
   const teks = document.getElementById('f-teks').value.trim();
-  if (!teks) {
-    alert('Teks soal wajib diisi!');
-    return;
-  }
+  if (!teks) { alert('Teks soal wajib diisi!'); return; }
 
   const type = document.getElementById('f-tipe-soal').value;
   const narasi = document.getElementById('f-narasi')?.value.trim() || null;
   const imageUrl = document.getElementById('f-image-url')?.value || null;
 
-  // Build options with images
   const options = [];
   for (let i = 0; i < state.optionCount; i++) {
     const text = document.getElementById(`opt-${i}`)?.value.trim();
     const image = document.getElementById(`opt-image-url-${i}`)?.value || null;
-    if (text) {
-      options.push({
-        text: text,
-        image: image
-      });
-    }
+    if (text) options.push({ text: text, image: image });
   }
 
-  if (options.length < 2) {
-    alert('Minimal 2 opsi jawaban!');
-    return;
-  }
+  if (options.length < 2) { alert('Minimal 2 opsi jawaban!'); return; }
 
   let correctAnswers = [];
   const isMultiSelect = ['PGK', 'BSK', 'ST'].includes(type);
-  
+
   if (isMultiSelect) {
     document.querySelectorAll('.correct-checkbox').forEach((cb, i) => {
       if (cb.checked) correctAnswers.push(i);
@@ -1138,13 +990,11 @@ function addQuestionToList() {
     if (radio) correctAnswers.push(parseInt(radio.value));
   }
 
-  if (correctAnswers.length === 0) {
-    alert('Pilih jawaban yang benar!');
-    return;
-  }
+  if (correctAnswers.length === 0) { alert('Pilih jawaban yang benar!'); return; }
 
+  const isEditing = editingQuestionIndex !== null;
   const question = {
-    id: state.adminQuestions.length + 1,
+    id: isEditing ? state.adminQuestions[editingQuestionIndex].id : state.adminQuestions.length + 1,
     text: teks,
     narasi: narasi,
     image: imageUrl,
@@ -1153,7 +1003,13 @@ function addQuestionToList() {
     answer: correctAnswers
   };
 
-  state.adminQuestions.push(question);
+  if (isEditing) {
+    state.adminQuestions[editingQuestionIndex] = question;
+    editingQuestionIndex = null;
+  } else {
+    state.adminQuestions.push(question);
+  }
+
   state.currentQuestionNumber = state.adminQuestions.length + 1;
 
   // Reset form
@@ -1166,7 +1022,7 @@ function addQuestionToList() {
   state.optionImages = {};
 
   render();
-  alert(`✅ Soal #${state.adminQuestions.length} berhasil ditambahkan!`);
+  alert(`✅ Soal berhasil ${isEditing ? 'diupdate' : 'ditambahkan'}!`);
 }
 
 function removeQuestionFromList(index) {
@@ -1183,16 +1039,13 @@ function addQuestion() {
 }
 
 function removeQuestion() {
-  if (state.currentQuestionNumber <= 1) {
-    alert('Minimal 1 soal!');
-    return;
-  }
+  if (state.currentQuestionNumber <= 1) { alert('Minimal 1 soal!'); return; }
   state.currentQuestionNumber--;
   render();
 }
 
 // ==========================================
-// EXCEL FUNCTIONS
+// EXCEL
 // ==========================================
 function handleExcelFile(event) {
   const file = event.target.files[0];
@@ -1205,14 +1058,14 @@ function handleExcelFile(event) {
       const workbook = XLSX.read(data, { type: 'array' });
       const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-      
+
       excelData = jsonData;
       state.excelData = excelData;
-      
+
       const previewDiv = document.getElementById('excel-preview');
       const dataPreview = document.getElementById('excel-data-preview');
       previewDiv.classList.remove('hidden');
-      
+
       let html = `<table class="border-collapse border border-gray-300 w-full text-sm">`;
       if (jsonData.length > 0) {
         const headers = Object.keys(jsonData[0]);
@@ -1227,13 +1080,12 @@ function handleExcelFile(event) {
       html += `</table>`;
       html += `<p class="mt-2 text-sm text-gray-500">Total: ${jsonData.length} soal</p>`;
       dataPreview.innerHTML = html;
-      
+
       document.getElementById('excel-file').value = '';
       document.getElementById('drop-zone').innerHTML = `
         <p class="text-green-500">✅ File siap diimport!</p>
         <p class="text-gray-500 text-sm">${file.name} (${jsonData.length} soal)</p>
       `;
-      
     } catch (err) {
       alert('❌ Gagal membaca file: ' + err.message);
     }
@@ -1242,28 +1094,20 @@ function handleExcelFile(event) {
 }
 
 function importFromExcel() {
-  if (!excelData || excelData.length === 0) {
-    alert('Tidak ada data untuk diimport!');
-    return;
-  }
+  if (!excelData || excelData.length === 0) { alert('Tidak ada data untuk diimport!'); return; }
 
   const questions = [];
   excelData.forEach((row, index) => {
     const type = row.Tipe || row.tipe || 'PG';
     const text = row.Soal || row.soal || row.text || '';
     const narasi = row.Narasi || row.narasi || null;
-    
+
     const options = [];
     const optionKeys = ['Opsi A', 'Opsi B', 'Opsi C', 'Opsi D', 'Opsi E', 'Opsi F', 'Opsi G', 'Opsi H'];
     optionKeys.forEach(key => {
-      if (row[key]) {
-        options.push({
-          text: row[key].trim(),
-          image: null
-        });
-      }
+      if (row[key]) options.push({ text: row[key].trim(), image: null });
     });
-    
+
     let answer = [];
     const jawaban = row.Jawaban || row.jawaban || '';
     if (jawaban) {
@@ -1286,14 +1130,10 @@ function importFromExcel() {
     }
   });
 
-  if (questions.length === 0) {
-    alert('Tidak ada soal yang valid! Cek format Excel.');
-    return;
-  }
+  if (questions.length === 0) { alert('Tidak ada soal yang valid! Cek format Excel.'); return; }
 
   state.adminQuestions = [...state.adminQuestions, ...questions];
   state.currentQuestionNumber = state.adminQuestions.length + 1;
-  
   alert(`✅ ${questions.length} soal berhasil diimport!`);
   clearExcelData();
   render();
@@ -1302,15 +1142,19 @@ function importFromExcel() {
 function clearExcelData() {
   excelData = [];
   state.excelData = null;
-  document.getElementById('excel-preview').classList.add('hidden');
-  document.getElementById('drop-zone').innerHTML = `
-    <p class="text-gray-500">📁 Drag & drop file Excel (.xlsx) ke sini</p>
-    <p class="text-gray-400 text-sm mt-2">atau</p>
-    <button onclick="document.getElementById('excel-file').click()" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-      Pilih File Excel
-    </button>
-    <input type="file" id="excel-file" accept=".xlsx,.xls" class="hidden" onchange="handleExcelFile(event)" />
-  `;
+  const previewEl = document.getElementById('excel-preview');
+  if (previewEl) previewEl.classList.add('hidden');
+  const dropZone = document.getElementById('drop-zone');
+  if (dropZone) {
+    dropZone.innerHTML = `
+      <p class="text-gray-500">📁 Drag & drop file Excel (.xlsx) ke sini</p>
+      <p class="text-gray-400 text-sm mt-2">atau</p>
+      <button onclick="document.getElementById('excel-file').click()" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+        Pilih File Excel
+      </button>
+      <input type="file" id="excel-file" accept=".xlsx,.xls" class="hidden" onchange="handleExcelFile(event)" />
+    `;
+  }
 }
 
 function downloadTemplate() {
@@ -1329,9 +1173,11 @@ function downloadTemplate() {
 }
 
 // ==========================================
-// SAVE ALL QUESTIONS TO SUPABASE
+// SAVE ALL / UPDATE
 // ==========================================
 async function saveAllQuestions() {
+  if (editingExamId) return saveEditedExam();
+
   const mapel = document.getElementById('f-mapel').value.trim();
   const kelas = document.getElementById('f-kelas').value.trim();
   const tipe = document.getElementById('f-tipe').value;
@@ -1346,8 +1192,7 @@ async function saveAllQuestions() {
     const { error } = await sb
       .from('question_banks')
       .insert([{
-        mapel,
-        kelas,
+        mapel, kelas,
         tipe_tes: tipe,
         judul_tes: judul,
         durasi: durasi,
@@ -1356,19 +1201,251 @@ async function saveAllQuestions() {
       }]);
 
     if (error) throw error;
-
     alert(`✅ Berhasil menyimpan ${state.adminQuestions.length} soal!`);
-    
+
     state.adminQuestions = [];
     state.currentQuestionNumber = 1;
     document.getElementById('f-mapel').value = '';
     document.getElementById('f-kelas').value = '';
     document.getElementById('f-judul').value = '';
     render();
-
   } catch (err) {
     alert('❌ Gagal simpan: ' + err.message);
     console.error(err);
+  }
+}
+
+// ==========================================
+// BRANKAS SOAL
+// ==========================================
+async function loadBrankas() {
+  const container = document.getElementById('brankas-list');
+  if (!container) return;
+  container.innerHTML = '<p class="text-gray-500">⏳ Memuat data...</p>';
+
+  try {
+    const { data, error } = await sb
+      .from('question_banks')
+      .select('*')
+      .order('id', { ascending: false });
+
+    if (error) throw error;
+    brankasData = data || [];
+
+    if (brankasData.length === 0) {
+      container.innerHTML = '<p class="text-gray-400 text-sm">Belum ada soal di brankas.</p>';
+      return;
+    }
+
+    container.innerHTML = brankasData.map(exam => `
+      <div class="border rounded-lg p-4 bg-gray-50">
+        <div class="flex justify-between items-start mb-2">
+          <div>
+            <h3 class="font-bold text-blue-700">${exam.judul_tes}</h3>
+            <p class="text-xs text-gray-500">${exam.mapel} • ${exam.kelas || '-'} • ${exam.tipe_tes} • ${exam.durasi || 3600}s</p>
+            <p class="text-xs text-gray-400">ID: ${exam.id} • ${exam.questions ? exam.questions.length : 0} soal</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="editExam(${exam.id})" class="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600">✏️ Edit</button>
+            <button onclick="deleteExam(${exam.id})" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">🗑️</button>
+          </div>
+        </div>
+        <div class="text-sm text-gray-600 mt-2">
+          ${(exam.questions || []).slice(0, 3).map((q, i) => `
+            <div class="border-l-2 border-blue-300 pl-2 py-1 mb-1">
+              <span class="font-bold text-xs">#${i+1}</span>
+              <span class="text-xs">${(q.text || '').substring(0, 60)}...</span>
+              ${q.image ? `<span class="text-xs bg-blue-100 px-1 rounded ml-1">📷 soal</span>` : ''}
+              ${(q.options || []).some(o => o.image) ? `<span class="text-xs bg-green-100 px-1 rounded ml-1">📷 opsi</span>` : ''}
+            </div>
+          `).join('')}
+          ${exam.questions && exam.questions.length > 3 ? `<p class="text-xs text-gray-400">... dan ${exam.questions.length - 3} soal lainnya</p>` : ''}
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    container.innerHTML = `<p class="text-red-500">❌ Error: ${err.message}</p>`;
+  }
+}
+
+function editExam(id) {
+  const exam = brankasData.find(e => e.id === id);
+  if (!exam) return;
+
+  editingExamId = id;
+  editingQuestionIndex = null;
+  state.adminQuestions = JSON.parse(JSON.stringify(exam.questions || []));
+  state.currentQuestionNumber = state.adminQuestions.length + 1;
+
+  // Pindah ke tab manual
+  showTab('manual');
+
+  // Render ulang dulu
+  render();
+
+  // Setelah render, isi form dan tampilkan editor
+  setTimeout(() => {
+    document.getElementById('f-mapel').value = exam.mapel || '';
+    document.getElementById('f-kelas').value = exam.kelas || '';
+    document.getElementById('f-tipe').value = exam.tipe_tes || 'PAS';
+    document.getElementById('f-judul').value = exam.judul_tes || '';
+    document.getElementById('f-durasi').value = exam.durasi || 3600;
+    showExamEditor();
+  }, 50);
+
+  alert(`✏️ Mode edit: ${exam.judul_tes}\n\nKlik "✏️ Edit" pada soal untuk tambah gambar. Setelah selesai, klik "💾 Simpan Perubahan".`);
+}
+
+function showExamEditor() {
+  const listContainer = document.getElementById('question-list');
+  if (!listContainer) return;
+
+  listContainer.innerHTML = state.adminQuestions.map((q, i) => `
+    <div class="border rounded-lg p-3 bg-white">
+      <div class="flex justify-between items-start mb-2">
+        <div>
+          <span class="font-bold text-blue-600">#${i+1}</span>
+          <span class="text-xs bg-gray-200 px-2 py-0.5 rounded ml-1">${q.type}</span>
+          <p class="text-sm mt-1">${(q.text || '').substring(0, 80)}...</p>
+        </div>
+        <div class="flex gap-1">
+          <button onclick="editQuestionInBrankas(${i})" class="bg-yellow-500 text-white px-2 py-1 rounded text-xs">✏️ Edit</button>
+          <button onclick="deleteQuestionInBrankas(${i})" class="bg-red-500 text-white px-2 py-1 rounded text-xs">🗑️</button>
+        </div>
+      </div>
+      ${q.image ? `<img src="${q.image}" class="max-w-[120px] max-h-[80px] rounded mt-1" />` : ''}
+    </div>
+  `).join('') + `
+    <div class="mt-3 flex gap-2 flex-wrap">
+      <button onclick="showAddNewQuestionForm()" class="bg-green-500 text-white px-3 py-1 rounded text-sm">+ Tambah Soal Baru</button>
+      <button onclick="saveEditedExam()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold">💾 Simpan Perubahan</button>
+      <button onclick="cancelEdit()" class="bg-gray-400 text-white px-4 py-2 rounded-lg">Batal</button>
+    </div>
+  `;
+}
+
+function editQuestionInBrankas(index) {
+  const q = state.adminQuestions[index];
+  editingQuestionIndex = index;
+  showAddNewQuestionForm(q);
+}
+
+function showAddNewQuestionForm(existing = null) {
+  const formEl = document.getElementById('f-teks');
+  if (!formEl) return;
+  formEl.scrollIntoView({ behavior: 'smooth' });
+
+  if (existing) {
+    formEl.value = existing.text || '';
+    document.getElementById('f-tipe-soal').value = existing.type || 'PG';
+    if (document.getElementById('f-narasi')) {
+      document.getElementById('f-narasi').value = existing.narasi || '';
+      document.getElementById('f-pakai-narasi').checked = !!existing.narasi;
+      document.getElementById('narasi-container').classList.toggle('hidden', !existing.narasi);
+    }
+    if (existing.image) {
+      document.getElementById('image-preview').src = existing.image;
+      document.getElementById('image-preview-container').classList.remove('hidden');
+      document.getElementById('f-image-url').value = existing.image;
+    } else {
+      document.getElementById('image-preview-container').classList.add('hidden');
+      document.getElementById('f-image-url').value = '';
+    }
+
+    // Set tipe soal dulu sebelum render opsi
+    document.getElementById('f-tipe-soal').value = existing.type || 'PG';
+    state.optionCount = existing.options.length;
+    updateOptionsByType();
+
+    setTimeout(() => {
+      existing.options.forEach((opt, i) => {
+        const input = document.getElementById(`opt-${i}`);
+        if (input) input.value = opt.text || '';
+        if (opt.image) {
+          const urlInput = document.getElementById(`opt-image-url-${i}`);
+          if (urlInput) urlInput.value = opt.image;
+          const preview = document.getElementById(`opt-preview-${i}`);
+          if (preview) {
+            preview.outerHTML = `<img src="${opt.image}" class="preview-thumb" id="opt-preview-${i}" />`;
+          }
+        }
+      });
+      const isMulti = ['PGK', 'BSK', 'ST'].includes(existing.type);
+      (existing.answer || []).forEach(a => {
+        if (isMulti) {
+          const cb = document.getElementById(`correct-${a}`);
+          if (cb) cb.checked = true;
+        } else {
+          const radio = document.querySelector(`input[name="correct-answer"][value="${a}"]`);
+          if (radio) radio.checked = true;
+        }
+      });
+    }, 100);
+  } else {
+    editingQuestionIndex = null;
+    formEl.value = '';
+    document.getElementById('image-preview-container').classList.add('hidden');
+    document.getElementById('f-image-url').value = '';
+  }
+}
+
+function deleteQuestionInBrankas(index) {
+  if (!confirm('Hapus soal ini dari daftar?')) return;
+  state.adminQuestions.splice(index, 1);
+  state.adminQuestions.forEach((q, i) => q.id = i + 1);
+  showExamEditor();
+}
+
+async function saveEditedExam() {
+  if (!editingExamId) return;
+  if (!confirm('Simpan perubahan ke brankas?')) return;
+
+  try {
+    const { error } = await sb
+      .from('question_banks')
+      .update({
+        mapel: document.getElementById('f-mapel').value.trim(),
+        kelas: document.getElementById('f-kelas').value.trim(),
+        tipe_tes: document.getElementById('f-tipe').value,
+        judul_tes: document.getElementById('f-judul').value.trim(),
+        durasi: parseInt(document.getElementById('f-durasi').value) || 3600,
+        questions: state.adminQuestions
+      })
+      .eq('id', editingExamId);
+
+    if (error) throw error;
+    alert('✅ Perubahan tersimpan!');
+    editingExamId = null;
+    editingQuestionIndex = null;
+    state.adminQuestions = [];
+    render();
+    // Langsung pindah ke tab brankas dan refresh
+    setTimeout(() => {
+      showTab('brankas');
+      loadBrankas();
+    }, 100);
+  } catch (err) {
+    alert('❌ Gagal: ' + err.message);
+  }
+}
+
+function cancelEdit() {
+  if (!confirm('Batalkan edit? Perubahan tidak akan disimpan.')) return;
+  editingExamId = null;
+  editingQuestionIndex = null;
+  state.adminQuestions = [];
+  render();
+}
+
+async function deleteExam(id) {
+  if (!confirm('Hapus seluruh paket soal ini dari brankas?')) return;
+  try {
+    const { error } = await sb.from('question_banks').delete().eq('id', id);
+    if (error) throw error;
+    alert('✅ Terhapus!');
+    loadBrankas();
+  } catch (err) {
+    alert('❌ Gagal hapus: ' + err.message);
   }
 }
 
