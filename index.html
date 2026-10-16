@@ -126,7 +126,7 @@ function render() {
 // ==========================================
 // LOGIN
 // ==========================================
-function renderLogin() {
+async function renderLogin() {
   app.innerHTML = `
     <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-700 p-4">
       <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
@@ -134,11 +134,44 @@ function renderLogin() {
           <h1 class="text-3xl font-bold text-gray-800">📝 CBT App</h1>
           <p class="text-gray-500 text-sm">Computer Based Test Platform</p>
         </div>
+        <div class="text-center py-8">
+          <p class="text-gray-500">⏳ Memuat daftar ujian...</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  let examList = [];
+  try {
+    const { data, error } = await sb
+      .from('question_banks')
+      .select('id, judul_tes, mapel, kelas, tipe_tes')
+      .order('id', { ascending: false });
+
+    if (error) throw error;
+    examList = data || [];
+  } catch (err) {
+    console.warn('⚠️ Gagal load daftar ujian:', err.message);
+  }
+
+  const optionsHTML = examList.length > 0
+    ? examList.map(e => `<option value="${e.judul_tes}">${e.judul_tes}</option>`).join('')
+    : '<option value="">-- Belum ada ujian tersedia --</option>';
+
+  app.innerHTML = `
+    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-700 p-4">
+      <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+        <div class="text-center mb-6">
+          <h1 class="text-3xl font-bold text-gray-800">📝 CBT App</h1>
+          <p class="text-gray-500 text-sm">Computer Based Test Platform</p>
+        </div>
+
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700">Nama Lengkap <span class="text-red-500">*</span></label>
             <input id="login-name" type="text" class="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Masukkan nama Anda" />
           </div>
+
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-sm font-medium text-gray-700">Sekolah</label>
@@ -149,14 +182,14 @@ function renderLogin() {
               <input id="login-branch" type="text" class="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="kota/Kab." />
             </div>
           </div>
+
           <div>
             <label class="block text-sm font-medium text-gray-700">Pilih Ujian</label>
             <select id="login-exam" class="w-full mt-1 px-4 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
-              <option value="Bahasa Inggris 11 SMA S1 (PAS)">Bahasa Inggris 11 SMA S1 (PAS)</option>
-              <option value="Matematika 12 SMA S2 (UH)">Matematika 12 SMA S2 (UH)</option>
-              <option value="Fisika 10 SMA S1 (PTS)">Fisika 10 SMA S1 (PTS)</option>
+              ${optionsHTML}
             </select>
           </div>
+
           <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">
             🚀 Mulai Ujian
           </button>
@@ -563,10 +596,11 @@ function renderAdmin() {
           <button onclick="backToLogin()" class="text-red-500 hover:text-red-700 font-medium">🚪 Logout</button>
         </div>
 
-        <div class="flex gap-2 mb-4">
+        <div class="flex gap-2 mb-4 flex-wrap">
           <button onclick="showTab('manual')" id="tab-manual" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">📝 Buat Manual</button>
           <button onclick="showTab('excel')" id="tab-excel" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300">📊 Import Excel</button>
           <button onclick="showTab('brankas')" id="tab-brankas" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300">🗄️ Brankas Soal</button>
+          <button onclick="showTab('statistik')" id="tab-statistik" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300">📈 Statistik Peserta</button>
         </div>
 
         <div id="tab-manual-content" class="space-y-4">
@@ -746,6 +780,37 @@ function renderAdmin() {
           </div>
         </div>
 
+        <div id="tab-statistik-content" class="hidden">
+          <div class="bg-white rounded-xl shadow p-6">
+            <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+              <h2 class="font-bold text-gray-700">📈 Statistik Peserta</h2>
+              <div class="flex gap-2">
+                <button onclick="loadStatistik()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
+                  🔄 Muat Ulang
+                </button>
+                <button onclick="downloadNilaiCSV()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm">
+                  📥 Download CSV
+                </button>
+                <button onclick="downloadNilaiExcel()" class="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 text-sm">
+                  📥 Download Excel
+                </button>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <input id="filter-exam" type="text" placeholder="🔍 Filter judul ujian..." 
+                oninput="renderStatistikTable()" 
+                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
+            </div>
+
+            <div id="statistik-summary" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"></div>
+
+            <div id="statistik-list" class="overflow-x-auto">
+              <p class="text-gray-400 text-sm">Klik "Muat Ulang" untuk melihat data.</p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   `;
@@ -773,21 +838,30 @@ function renderAdmin() {
 }
 
 function showTab(tab) {
-  document.querySelectorAll('[id$="-content"]').forEach(el => el.classList.add('hidden'));
+  ['manual', 'excel', 'brankas', 'statistik'].forEach(t => {
+    const el = document.getElementById(`tab-${t}-content`);
+    if (el) el.classList.add('hidden');
+  });
+
   const content = document.getElementById(`tab-${tab}-content`);
   if (content) content.classList.remove('hidden');
 
-  ['manual', 'excel', 'brankas'].forEach(t => {
+  ['manual', 'excel', 'brankas', 'statistik'].forEach(t => {
     const btn = document.getElementById(`tab-${t}`);
     if (btn) {
       btn.classList.remove('bg-blue-600', 'text-white');
       btn.classList.add('bg-gray-200', 'text-gray-700');
     }
   });
+
   const activeBtn = document.getElementById(`tab-${tab}`);
   if (activeBtn) {
     activeBtn.classList.remove('bg-gray-200', 'text-gray-700');
     activeBtn.classList.add('bg-blue-600', 'text-white');
+  }
+
+  if (tab === 'statistik') {
+    setTimeout(() => loadStatistik(), 100);
   }
 }
 
@@ -1012,7 +1086,6 @@ function addQuestionToList() {
 
   state.currentQuestionNumber = state.adminQuestions.length + 1;
 
-  // Reset form
   document.getElementById('f-teks').value = '';
   if (document.getElementById('f-narasi')) document.getElementById('f-narasi').value = '';
   document.getElementById('f-image-url').value = '';
@@ -1277,13 +1350,9 @@ function editExam(id) {
   state.adminQuestions = JSON.parse(JSON.stringify(exam.questions || []));
   state.currentQuestionNumber = state.adminQuestions.length + 1;
 
-  // Pindah ke tab manual
   showTab('manual');
-
-  // Render ulang dulu
   render();
 
-  // Setelah render, isi form dan tampilkan editor
   setTimeout(() => {
     document.getElementById('f-mapel').value = exam.mapel || '';
     document.getElementById('f-kelas').value = exam.kelas || '';
@@ -1352,7 +1421,6 @@ function showAddNewQuestionForm(existing = null) {
       document.getElementById('f-image-url').value = '';
     }
 
-    // Set tipe soal dulu sebelum render opsi
     document.getElementById('f-tipe-soal').value = existing.type || 'PG';
     state.optionCount = existing.options.length;
     updateOptionsByType();
@@ -1419,7 +1487,6 @@ async function saveEditedExam() {
     editingQuestionIndex = null;
     state.adminQuestions = [];
     render();
-    // Langsung pindah ke tab brankas dan refresh
     setTimeout(() => {
       showTab('brankas');
       loadBrankas();
@@ -1447,6 +1514,203 @@ async function deleteExam(id) {
   } catch (err) {
     alert('❌ Gagal hapus: ' + err.message);
   }
+}
+
+// ==========================================
+// STATISTIK PESERTA
+// ==========================================
+let statistikData = [];
+
+async function loadStatistik() {
+  const container = document.getElementById('statistik-list');
+  const summary = document.getElementById('statistik-summary');
+  if (!container) return;
+
+  container.innerHTML = '<p class="text-gray-500">⏳ Memuat data...</p>';
+  summary.innerHTML = '';
+
+  try {
+    const { data, error } = await sb
+      .from('exam_results')
+      .select('*')
+      .order('submitted_at', { ascending: false });
+
+    if (error) throw error;
+    statistikData = data || [];
+
+    if (statistikData.length === 0) {
+      container.innerHTML = '<p class="text-gray-400 text-sm">Belum ada peserta yang mengerjakan ujian.</p>';
+      return;
+    }
+
+    const totalPeserta = statistikData.length;
+    const totalUjian = [...new Set(statistikData.map(d => d.exam_title))].length;
+    const rataRata = Math.round(
+      statistikData.reduce((sum, d) => sum + (d.score || 0), 0) / totalPeserta
+    );
+    const nilaiTertinggi = Math.max(...statistikData.map(d => d.score || 0));
+
+    summary.innerHTML = `
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <div class="text-2xl font-bold text-blue-700">${totalPeserta}</div>
+        <div class="text-xs text-blue-600">Total Peserta</div>
+      </div>
+      <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+        <div class="text-2xl font-bold text-purple-700">${totalUjian}</div>
+        <div class="text-xs text-purple-600">Total Ujian</div>
+      </div>
+      <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+        <div class="text-2xl font-bold text-green-700">${rataRata}</div>
+        <div class="text-xs text-green-600">Rata-rata Nilai</div>
+      </div>
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+        <div class="text-2xl font-bold text-yellow-700">${nilaiTertinggi}</div>
+        <div class="text-xs text-yellow-600">Nilai Tertinggi</div>
+      </div>
+    `;
+
+    renderStatistikTable();
+  } catch (err) {
+    container.innerHTML = `<p class="text-red-500">❌ Error: ${err.message}</p>`;
+  }
+}
+
+function renderStatistikTable() {
+  const container = document.getElementById('statistik-list');
+  if (!container) return;
+
+  const filter = (document.getElementById('filter-exam')?.value || '').toLowerCase();
+
+  const filtered = statistikData.filter(d =>
+    (d.exam_title || '').toLowerCase().includes(filter) ||
+    (d.student_name || '').toLowerCase().includes(filter) ||
+    (d.school || '').toLowerCase().includes(filter)
+  );
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<p class="text-gray-400 text-sm">Tidak ada data yang cocok dengan filter.</p>';
+    return;
+  }
+
+  container.innerHTML = `
+    <table class="w-full border-collapse border border-gray-300 text-sm">
+      <thead>
+        <tr class="bg-gray-100">
+          <th class="border border-gray-300 px-2 py-1">#</th>
+          <th class="border border-gray-300 px-2 py-1 text-left">Nama</th>
+          <th class="border border-gray-300 px-2 py-1 text-left">Sekolah</th>
+          <th class="border border-gray-300 px-2 py-1 text-left">Ujian</th>
+          <th class="border border-gray-300 px-2 py-1">Benar</th>
+          <th class="border border-gray-300 px-2 py-1">Total</th>
+          <th class="border border-gray-300 px-2 py-1">Nilai</th>
+          <th class="border border-gray-300 px-2 py-1">Pelanggaran</th>
+          <th class="border border-gray-300 px-2 py-1">Waktu Submit</th>
+          <th class="border border-gray-300 px-2 py-1">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filtered.map((d, i) => `
+          <tr class="hover:bg-gray-50">
+            <td class="border border-gray-300 px-2 py-1 text-center">${i+1}</td>
+            <td class="border border-gray-300 px-2 py-1">${d.student_name || '-'}</td>
+            <td class="border border-gray-300 px-2 py-1">${d.school || '-'}</td>
+            <td class="border border-gray-300 px-2 py-1">${d.exam_title || '-'}</td>
+            <td class="border border-gray-300 px-2 py-1 text-center">${d.correct_answers || 0}</td>
+            <td class="border border-gray-300 px-2 py-1 text-center">${d.total_questions || 0}</td>
+            <td class="border border-gray-300 px-2 py-1 text-center font-bold ${d.score >= 70 ? 'text-green-600' : 'text-red-600'}">${d.score || 0}</td>
+            <td class="border border-gray-300 px-2 py-1 text-center">${d.cheating_count || 0}</td>
+            <td class="border border-gray-300 px-2 py-1 text-xs">${d.submitted_at ? new Date(d.submitted_at).toLocaleString('id-ID') : '-'}</td>
+            <td class="border border-gray-300 px-2 py-1 text-center">
+              <button onclick="lihatDetail(${d.id})" class="bg-blue-500 text-white px-2 py-0.5 rounded text-xs hover:bg-blue-600">👁️</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    <p class="text-xs text-gray-500 mt-2">Total: ${filtered.length} peserta</p>
+  `;
+}
+
+function lihatDetail(id) {
+  const d = statistikData.find(x => x.id === id);
+  if (!d) return;
+
+  const answers = d.answers || {};
+  const answersText = Object.entries(answers)
+    .map(([qid, ans]) => `Soal ${qid}: [${Array.isArray(ans) ? ans.join(', ') : ans}]`)
+    .join('\n');
+
+  alert(
+    `👤 ${d.student_name}\n` +
+    `🏫 ${d.school} - ${d.branch}\n` +
+    `📚 ${d.exam_title}\n\n` +
+    `✅ Benar: ${d.correct_answers}/${d.total_questions}\n` +
+    `📊 Nilai: ${d.score}\n` +
+    `⚠️ Pelanggaran: ${d.cheating_count || 0}\n` +
+    `⏱️ Durasi: ${d.duration_seconds || 0} detik\n` +
+    `📅 Submit: ${new Date(d.submitted_at).toLocaleString('id-ID')}\n\n` +
+    `📝 Jawaban:\n${answersText || '(tidak tersedia)'}`
+  );
+}
+
+function downloadNilaiCSV() {
+  if (statistikData.length === 0) {
+    alert('Tidak ada data untuk didownload!');
+    return;
+  }
+
+  const headers = ['No', 'Nama', 'Sekolah', 'Kota/Kab', 'Ujian', 'Benar', 'Total', 'Nilai', 'Pelanggaran', 'Durasi (detik)', 'Waktu Submit'];
+  const rows = statistikData.map((d, i) => [
+    i + 1,
+    d.student_name || '',
+    d.school || '',
+    d.branch || '',
+    d.exam_title || '',
+    d.correct_answers || 0,
+    d.total_questions || 0,
+    d.score || 0,
+    d.cheating_count || 0,
+    d.duration_seconds || 0,
+    d.submitted_at ? new Date(d.submitted_at).toLocaleString('id-ID') : ''
+  ]);
+
+  const csvContent = [headers, ...rows]
+    .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+
+  const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `nilai_cbt_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function downloadNilaiExcel() {
+  if (statistikData.length === 0) {
+    alert('Tidak ada data untuk didownload!');
+    return;
+  }
+
+  const data = statistikData.map((d, i) => ({
+    No: i + 1,
+    Nama: d.student_name || '',
+    Sekolah: d.school || '',
+    'Kota/Kab': d.branch || '',
+    Ujian: d.exam_title || '',
+    Benar: d.correct_answers || 0,
+    Total: d.total_questions || 0,
+    Nilai: d.score || 0,
+    Pelanggaran: d.cheating_count || 0,
+    'Durasi (detik)': d.duration_seconds || 0,
+    'Waktu Submit': d.submitted_at ? new Date(d.submitted_at).toLocaleString('id-ID') : ''
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Nilai');
+  XLSX.writeFile(wb, `nilai_cbt_${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
 
 // ==========================================
