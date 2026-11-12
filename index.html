@@ -878,7 +878,7 @@ function detectCheat(action) {
 // ADMIN LAYOUT
 // ==========================================
 const menuTitles = {
-  dashboard: 'Dashboard', create: 'Buat Soal', exams: 'Database Tes',
+  dashboard: 'Dashboard', create: 'Buat Soal', exams: 'Database Tes', reports: 'Laporan Per Try Out'
   cheaters: 'Pelanggaran', students: 'Data Siswa', settings: 'Setting', view_cbt: 'Lihat CBT'
 };
 
@@ -897,7 +897,8 @@ function renderAdminLayout() {
         <div class="sidebar-item ${menu === 'dashboard' ? 'active' : ''}" onclick="goToAdminMenu('dashboard')"><span class="icon-wrap">${ICONS.layout}</span>Dashboard</div>
         <div class="sidebar-item ${menu === 'create' ? 'active' : ''}" onclick="goToAdminMenu('create')"><span class="icon-wrap">${ICONS.penTool}</span>Buat Soal</div>
         <div class="sidebar-item ${menu === 'exams' ? 'active' : ''}" onclick="goToAdminMenu('exams')"><span class="icon-wrap">${ICONS.fileText}</span>Database Tes</div>
-        <div class="sidebar-item ${menu === 'cheaters' ? 'active' : ''}" onclick="goToAdminMenu('cheaters')"><span class="icon-wrap">${ICONS.alertTriangle}</span>Pelanggaran</div>
+        <div class="sidebar-item ${menu === 'reports' ? 'active' : ''}" onclick="goToAdminMenu('reports')"><span class="icon-wrap">${ICONS.trendingUp}</span>Laporan</div>
+		<div class="sidebar-item ${menu === 'cheaters' ? 'active' : ''}" onclick="goToAdminMenu('cheaters')"><span class="icon-wrap">${ICONS.alertTriangle}</span>Pelanggaran</div>
         <div class="sidebar-item ${menu === 'students' ? 'active' : ''}" onclick="goToAdminMenu('students')"><span class="icon-wrap">${ICONS.users}</span>Data Siswa</div>
         <div class="sidebar-item ${menu === 'settings' ? 'active' : ''}" onclick="goToAdminMenu('settings')"><span class="icon-wrap">${ICONS.settings}</span>Setting</div>
         <div class="sidebar-item ${menu === 'view_cbt' ? 'active' : ''}" onclick="goToAdminMenu('view_cbt')"><span class="icon-wrap">${ICONS.externalLink}</span>Lihat CBT</div>
@@ -919,6 +920,7 @@ function renderAdminLayout() {
   if (menu === 'dashboard') loadDashboardData();
   if (menu === 'create') loadCreateForm();
   if (menu === 'exams') loadExamsData();
+  if (menu === 'reports') loadReportsData(); 
   if (menu === 'cheaters') loadCheatersData();
   if (menu === 'students') loadStudentsData();
   if (menu === 'settings') loadSettings();
@@ -929,7 +931,8 @@ function renderAdminContent(menu) {
     case 'dashboard': return renderDashboard();
     case 'create': return renderCreateForm();
     case 'exams': return renderExams();
-    case 'cheaters': return renderCheaters();
+    case 'reports': return renderReports();
+	case 'cheaters': return renderCheaters();
     case 'students': return renderStudents();
     case 'settings': return renderSettings();
     case 'view_cbt': return renderViewCBT();
@@ -1917,6 +1920,225 @@ async function deleteExam(id) {
 }
 
 // ==========================================
+// ADMIN - LAPORAN PER TRY OUT
+// ==========================================
+function renderReports() {
+  return `
+    <div class="space-y-4 animate-fadeInUp">
+      <div class="flex gap-2 flex-wrap">
+        <button onclick="exportGlobalExcel()" class="btn-success text-xs">${ICONS.fileSpreadsheet} Unduh Global (Semua Peserta)</button>
+        <button onclick="loadReportsData()" class="btn-ghost text-xs">🔄 Muat Ulang</button>
+        <button onclick="globalCleanup()" class="btn-danger text-xs">${ICONS.alertTriangle} Hapus SEMUA Data Peserta</button>
+      </div>
+      <div id="reports-list"><p class="text-gray-400 text-sm">Memuat data...</p></div>
+    </div>
+  `;
+}
+
+async function loadReportsData() {
+  const container = document.getElementById('reports-list');
+  if (!container) return;
+  container.innerHTML = '<p class="text-gray-400 text-sm">⏳ Memuat data...</p>';
+  try {
+    // Ambil semua hasil ujian
+    const { data, error } = await sb.from('exam_results').select('*').order('submitted_at', { ascending: false });
+    if (error) throw error;
+
+    // Ambil semua paket ujian
+    const { data: exams } = await sb.from('question_banks').select('id, judul_tes, mapel, kelas, tipe_tes');
+    const examTitles = (exams || []).map(e => e.judul_tes);
+
+    // Group by exam_title
+    const groups = {};
+    (data || []).forEach(r => {
+      const key = r.exam_title || '(Tanpa Judul)';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(r);
+    });
+
+    // Include exam yang belum ada peserta
+    examTitles.forEach(t => { if (!groups[t]) groups[t] = []; });
+
+    window._reportsData = { data: data || [], exams: exams || [], groups };
+
+    if (Object.keys(groups).length === 0) {
+      container.innerHTML = `<div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-center"><p class="text-blue-600 dark:text-blue-400 text-sm">Belum ada data peserta ujian</p></div>`;
+      return;
+    }
+
+    let html = '';
+    Object.entries(groups).forEach(([title, rows]) => {
+      const total = rows.length;
+      const avg = total > 0 ? Math.round(rows.reduce((s, r) => s + (r.score || 0), 0) / total) : 0;
+      const max = total > 0 ? Math.max(...rows.map(r => r.score || 0)) : 0;
+      const min = total > 0 ? Math.min(...rows.map(r => r.score || 0)) : 0;
+      const cheaters = rows.filter(r => (r.cheating_count || 0) > 0).length;
+      const examInfo = (exams || []).find(e => e.judul_tes === title);
+
+      html += `
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700 mb-3">
+          <div class="flex justify-between items-start flex-wrap gap-2 mb-3">
+            <div class="flex-1 min-w-0">
+              <h3 class="font-bold text-gray-800 dark:text-white text-sm flex items-center gap-2 flex-wrap">
+                ${ICONS.fileText} ${title}
+                ${examInfo ? `<span class="badge badge-purple text-[9px]">${examInfo.mapel}</span>` : ''}
+                ${examInfo?.kelas ? `<span class="badge badge-yellow text-[9px]">${examInfo.kelas}</span>` : ''}
+                ${examInfo ? `<span class="badge badge-green text-[9px]">${examInfo.tipe_tes}</span>` : ''}
+              </h3>
+              <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-2 text-center">
+                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2">
+                  <div class="text-lg font-extrabold text-blue-700 dark:text-blue-300">${total}</div>
+                  <div class="text-[9px] text-blue-600 dark:text-blue-400">Peserta</div>
+                </div>
+                <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-2">
+                  <div class="text-lg font-extrabold text-green-700 dark:text-green-300">${avg}%</div>
+                  <div class="text-[9px] text-green-600 dark:text-green-400">Rata-rata</div>
+                </div>
+                <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-2">
+                  <div class="text-lg font-extrabold text-purple-700 dark:text-purple-300">${max}%</div>
+                  <div class="text-[9px] text-purple-600 dark:text-purple-400">Tertinggi</div>
+                </div>
+                <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-2">
+                  <div class="text-lg font-extrabold text-red-700 dark:text-red-300">${min}%</div>
+                  <div class="text-[9px] text-red-600 dark:text-red-400">Terendah</div>
+                </div>
+                <div class="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-2">
+                  <div class="text-lg font-extrabold text-amber-700 dark:text-amber-300">${cheaters}</div>
+                  <div class="text-[9px] text-amber-600 dark:text-amber-400">Pelanggaran</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-1.5 flex-wrap">
+            <button onclick="exportPerExam('${title.replace(/'/g, "\\'")}')" class="btn-success text-xs py-1 px-3">${ICONS.fileSpreadsheet} Unduh Excel (${total} peserta)</button>
+            <button onclick="deleteResultsByExam('${title.replace(/'/g, "\\'")}')" class="btn-danger text-xs py-1 px-3">${ICONS.alertTriangle} Hapus Data (${total})</button>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  } catch (err) {
+    container.innerHTML = `<p class="text-red-500 text-sm">❌ ${err.message}</p>`;
+  }
+}
+
+function exportPerExam(examTitle) {
+  const groups = window._reportsData?.groups || {};
+  const rows = groups[examTitle] || [];
+  if (rows.length === 0) { showToast('Tidak ada peserta untuk ujian ini!', 'warning'); return; }
+
+  const wb = XLSX.utils.book_new();
+  const header = [['No', 'Nama', 'Sekolah', 'Kota/Kab', 'Ujian', 'Benar', 'Total', 'Nilai', 'Pelanggaran', 'Durasi (detik)', 'Waktu Submit']];
+  rows.forEach((r, i) => header.push([
+    i + 1, r.student_name, r.school || '-', r.branch || '-', r.exam_title,
+    r.correct_answers, r.total_questions, r.score + '%', r.cheating_count || 0,
+    r.duration_seconds || 0, new Date(r.submitted_at).toLocaleString('id-ID')
+  ]));
+  const ws = XLSX.utils.aoa_to_sheet(header);
+  ws['!cols'] = [{ wch: 5 }, { wch: 20 }, { wch: 25 }, { wch: 15 }, { wch: 30 }, { wch: 8 }, { wch: 8 }, { wch: 10 }, { wch: 12 }, { wch: 15 }, { wch: 20 }];
+  XLSX.utils.book_append_sheet(wb, ws, 'Hasil Ujian');
+
+  // Sheet rekap
+  const avg = Math.round(rows.reduce((s, r) => s + (r.score || 0), 0) / rows.length);
+  const rekap = [
+    ['REKAP LAPORAN', ''],
+    ['Judul Ujian', examTitle],
+    ['Total Peserta', rows.length],
+    ['Rata-rata Nilai', avg + '%'],
+    ['Nilai Tertinggi', Math.max(...rows.map(r => r.score || 0)) + '%'],
+    ['Nilai Terendah', Math.min(...rows.map(r => r.score || 0)) + '%'],
+    ['Total Pelanggaran', rows.reduce((s, r) => s + (r.cheating_count || 0), 0)],
+    ['Tanggal Export', new Date().toLocaleString('id-ID')]
+  ];
+  const wsRekap = XLSX.utils.aoa_to_sheet(rekap);
+  wsRekap['!cols'] = [{ wch: 25 }, { wch: 30 }];
+  XLSX.utils.book_append_sheet(wb, wsRekap, 'Rekap');
+
+  const safeTitle = examTitle.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 40);
+  XLSX.writeFile(wb, `laporan_${safeTitle}_${new Date().toISOString().split('T')[0]}.xlsx`);
+  showToast(`✅ Laporan "${examTitle}" berhasil diunduh!`, 'success');
+}
+
+async function exportGlobalExcel() {
+  try {
+    const { data, error } = await sb.from('exam_results').select('*').order('exam_title').order('submitted_at', { ascending: false });
+    if (error) throw error;
+    if (!data || data.length === 0) { showToast('Tidak ada data!', 'warning'); return; }
+
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: Semua data
+    const rows = [['No', 'Ujian', 'Nama', 'Sekolah', 'Kota/Kab', 'Benar', 'Total', 'Nilai', 'Pelanggaran', 'Durasi (detik)', 'Waktu Submit']];
+    data.forEach((r, i) => rows.push([
+      i + 1, r.exam_title, r.student_name, r.school || '-', r.branch || '-',
+      r.correct_answers, r.total_questions, r.score + '%', r.cheating_count || 0,
+      r.duration_seconds || 0, new Date(r.submitted_at).toLocaleString('id-ID')
+    ]));
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{ wch: 5 }, { wch: 30 }, { wch: 20 }, { wch: 25 }, { wch: 15 }, { wch: 8 }, { wch: 8 }, { wch: 10 }, { wch: 12 }, { wch: 15 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Semua Peserta');
+
+    // Sheet 2: Rekap per ujian
+    const groups = {};
+    data.forEach(r => {
+      const k = r.exam_title || '(Tanpa Judul)';
+      if (!groups[k]) groups[k] = [];
+      groups[k].push(r);
+    });
+    const rekapRows = [['Ujian', 'Jumlah Peserta', 'Rata-rata', 'Tertinggi', 'Terendah', 'Total Pelanggaran']];
+    Object.entries(groups).forEach(([title, rows]) => {
+      const avg = Math.round(rows.reduce((s, r) => s + (r.score || 0), 0) / rows.length);
+      rekapRows.push([
+        title, rows.length, avg + '%',
+        Math.max(...rows.map(r => r.score || 0)) + '%',
+        Math.min(...rows.map(r => r.score || 0)) + '%',
+        rows.reduce((s, r) => s + (r.cheating_count || 0), 0)
+      ]);
+    });
+    const wsRekap = XLSX.utils.aoa_to_sheet(rekapRows);
+    wsRekap['!cols'] = [{ wch: 35 }, { wch: 15 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 18 }];
+    XLSX.utils.book_append_sheet(wb, wsRekap, 'Rekap Per Ujian');
+
+    XLSX.writeFile(wb, `laporan_global_${new Date().toISOString().split('T')[0]}.xlsx`);
+    showToast(`✅ Laporan global (${data.length} peserta) berhasil diunduh!`, 'success');
+  } catch (err) {
+    showToast('Gagal export: ' + err.message, 'error');
+  }
+}
+
+async function deleteResultsByExam(examTitle) {
+  const groups = window._reportsData?.groups || {};
+  const count = (groups[examTitle] || []).length;
+  if (count === 0) { showToast('Tidak ada data untuk dihapus!', 'warning'); return; }
+  if (!confirm(`⚠️ HAPUS PERMANEN ${count} data peserta untuk ujian:\n\n"${examTitle}"\n\nData akan hilang dari database. Lanjutkan?`)) return;
+
+  try {
+    const { error } = await sb.from('exam_results').delete().eq('exam_title', examTitle);
+    if (error) throw error;
+    showToast(`✅ ${count} data peserta "${examTitle}" terhapus!`, 'success');
+    loadReportsData();
+  } catch (err) {
+    showToast('Gagal hapus: ' + err.message, 'error');
+  }
+}
+
+async function globalCleanup() {
+  if (!confirm('⚠️ HAPUS SEMUA DATA PESERTA dari database?\n\nTindakan ini PERMANEN dan tidak bisa dibatalkan!')) return;
+  if (!confirm('⚠️ KONFIRMASI TERAKHIR: Semua hasil ujian siswa akan hilang. Yakin?')) return;
+
+  try {
+    // Supabase butuh filter untuk delete all. Pakai .neq pada kolom id dengan nilai yang pasti tidak ada.
+    const { error, count } = await sb.from('exam_results').delete({ count: 'exact' }).gte('id', 0);
+    if (error) throw error;
+    showToast(`✅ ${count ?? 'Semua'} data peserta terhapus!`, 'success');
+    loadReportsData();
+  } catch (err) {
+    showToast('Gagal hapus: ' + err.message, 'error');
+  }
+}
+
+// ==========================================
 // ADMIN - PELANGGARAN
 // ==========================================
 function renderCheaters() {
@@ -2296,6 +2518,11 @@ window.loadStudentsData = loadStudentsData;
 window.filterStudentsTable = filterStudentsTable;
 window.lihatDetail = lihatDetail;
 window.editQuestionFromList = editQuestionFromList;
+window.loadReportsData = loadReportsData;
+window.exportPerExam = exportPerExam;
+window.exportGlobalExcel = exportGlobalExcel;
+window.deleteResultsByExam = deleteResultsByExam;
+window.globalCleanup = globalCleanup;
 
 console.log('✅ CBT App loaded (FIXED). Admin: tambah #admin di URL');
 </script>
